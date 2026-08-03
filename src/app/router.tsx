@@ -10,6 +10,7 @@ import { Route, Routes } from "react-router";
 const Home = lazy(() => import("@/app/pages/Home"));
 const About = lazy(() => import("@/app/pages/About"));
 const Admissions = lazy(() => import("@/app/pages/Admissions"));
+const Apply = lazy(() => import("@/app/pages/Apply"));
 const Academics = lazy(() => import("@/app/pages/Academics"));
 const Programmes = lazy(() => import("@/app/pages/Programmes"));
 const ProgrammeDetail = lazy(() => import("@/app/pages/ProgrammeDetail"));
@@ -35,6 +36,7 @@ export function AppRoutes() {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/admissions" element={<Admissions />} />
+        <Route path="/admissions/apply" element={<Apply />} />
         <Route path="/academics" element={<Academics />} />
         <Route path="/programmes" element={<Programmes />} />
         <Route path="/programmes/:slug" element={<ProgrammeDetail />} />

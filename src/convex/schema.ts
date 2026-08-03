@@ -32,6 +32,37 @@ const schema = defineSchema(
       role: v.optional(roleValidator), // role of the user. do not remove
     }).index("email", ["email"]), // index for the email. do not remove or modify
 
+    // Admission applications submitted through the online form.
+    // Public submission — no sign-in required.
+    applications: defineTable({
+      refNumber: v.string(), // e.g. MICO-2026-1A2B3C
+      firstName: v.string(),
+      lastName: v.string(),
+      dateOfBirth: v.string(),
+      gender: v.string(),
+      nationality: v.string(),
+      trn: v.optional(v.string()),
+      address: v.string(),
+      cityTown: v.string(),
+      parish: v.string(),
+      email: v.string(),
+      phone: v.string(),
+      emergencyContactName: v.optional(v.string()),
+      emergencyContactPhone: v.optional(v.string()),
+      studyLevel: v.string(),
+      programme: v.string(),
+      intake: v.string(),
+      studyMode: v.string(),
+      secondarySchool: v.string(),
+      lastGradeCompleted: v.string(),
+      qualifications: v.string(),
+      otherInstitution: v.optional(v.string()),
+      heardAbout: v.string(),
+      additionalInfo: v.optional(v.string()),
+    })
+      .index("by_email", ["email"])
+      .index("by_refNumber", ["refNumber"]),
+
     // add other tables here
 
     // tableName: defineTable({
