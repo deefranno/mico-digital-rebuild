@@ -67,17 +67,15 @@ export default function Apply() {
         <CTAButton href="#online-form" variant="gold">
           Start the online form
         </CTAButton>
-        <CTAButton
-          href="#"
-          variant="outline"
-          onClick={(e: React.MouseEvent) => {
-            e.preventDefault();
-            void handleBlankDownload();
-          }}
+        <button
+          type="button"
+          onClick={() => void handleBlankDownload()}
+          disabled={downloading}
+          className="inline-flex items-center justify-center gap-2 rounded-sm border border-white/40 px-6 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-white hover:text-black disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mico-gold"
         >
           <FileDown aria-hidden="true" className="size-4" />
           {downloading ? "Preparing PDF…" : "Download blank form (PDF)"}
-        </CTAButton>
+        </button>
       </PageHeader>
 
       <section className="bg-white py-14 sm:py-16">

@@ -176,19 +176,25 @@ function DeclarationCheckbox({
   return (
     <div className="space-y-1.5">
       <label className="flex cursor-pointer items-start gap-3">
-        <input
-          type="checkbox"
-          checked={checked}
-          onChange={(e) => onChange(e.target.checked)}
-          aria-invalid={error ? true : undefined}
-          className="mt-0.5 size-5 shrink-0 cursor-pointer appearance-none rounded-sm border border-black/25 bg-white transition-colors checked:border-mico-gold checked:bg-mico-gold focus:outline-none focus:ring-2 focus:ring-mico-gold/40"
-          style={{ display: "block" }}
-        />
-        {checked && (
-          <span className="pointer-events-none -ml-5 mt-1 text-xs font-bold text-black">
-            ✓
+        <span className="relative mt-0.5 inline-flex size-5 shrink-0">
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={(e) => onChange(e.target.checked)}
+            aria-invalid={error ? true : undefined}
+            className="absolute inset-0 z-10 size-full cursor-pointer opacity-0"
+          />
+          <span
+            aria-hidden="true"
+            className={`flex size-5 items-center justify-center rounded-sm border text-xs font-bold transition-colors ${
+              checked
+                ? "border-mico-gold bg-mico-gold text-black"
+                : "border-black/25 bg-white"
+            }`}
+          >
+            {checked ? "✓" : ""}
           </span>
-        )}
+        </span>
         <span className="text-sm leading-relaxed text-mico-dark">
           I confirm that the information I have provided is true and complete
           to the best of my knowledge. I consent to The Mico University College

@@ -160,7 +160,8 @@ class FormDoc {
     this.y = 0;
   }
 
-  private ensure(height: number) {
+  /** Adds a new page when there is not enough vertical room left. */
+  ensure(height: number) {
     if (this.y + height > PAGE_H - MARGIN) {
       this.doc.addPage();
       this.y = MARGIN;

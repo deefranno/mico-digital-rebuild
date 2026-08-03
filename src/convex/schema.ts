@@ -59,6 +59,7 @@ const schema = defineSchema(
       otherInstitution: v.optional(v.string()),
       heardAbout: v.string(),
       additionalInfo: v.optional(v.string()),
+      declarationConfirmed: v.boolean(),
     })
       .index("by_email", ["email"])
       .index("by_refNumber", ["refNumber"]),

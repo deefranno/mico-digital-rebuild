@@ -1,3 +1,4 @@
+import { api } from "./_generated/api";
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 
@@ -26,11 +27,15 @@ export const applicationFields = {
   otherInstitution: v.optional(v.string()),
   heardAbout: v.string(),
   additionalInfo: v.optional(v.string()),
+  declarationConfirmed: v.boolean(),
 };
 
 /**
  * Store a submitted admission application and return a reference number the
  * applicant can keep. Public mutation — applicants do not need an account.
+ *
+ * After the row is stored, a confirmation email is scheduled (fire-and-forget)
+ * via `emails.sendAdmissionConfirmation`.
  */
 export const submitApplication = mutation({
   args: applicationFields,
@@ -41,6 +46,15 @@ export const submitApplication = mutation({
     await ctx.db.insert("applications", {
       ...args,
       refNumber,
+    });
+
+    await ctx.scheduler.runAfter(0, api.emails.sendAdmissionConfirmation, {
+      email: args.email,
+      firstName: args.firstName,
+      lastName: args.lastName,
+      refNumber,
+      programme: args.programme,
+      intake: args.intake,
     });
 
     return { refNumber };

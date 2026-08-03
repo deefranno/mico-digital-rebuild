@@ -48,7 +48,7 @@ export default function Admissions() {
         description="Everything you need to apply — requirements, fees, scholarships and key dates. All information on this page is placeholder until confirmed by the institution."
         crumbs={[{ label: "Admissions" }]}
       >
-        <CTAButton href="#how-to-apply" variant="gold">
+        <CTAButton href="/admissions/apply" variant="gold">
           Start your application
           <ArrowRight aria-hidden="true" className="size-4" />
         </CTAButton>
