@@ -1,5 +1,7 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { api } from "./_generated/api";
-import { mutation } from "./_generated/server";
+import { mutation, query, QueryCtx } from "./_generated/server";
+import { ROLES } from "./schema";
 import { v } from "convex/values";
 
 /** Shared shape of an admission application. Kept in sync with the form. */
@@ -29,6 +31,13 @@ export const applicationFields = {
   additionalInfo: v.optional(v.string()),
   declarationConfirmed: v.boolean(),
 };
+
+async function isAdmin(ctx: QueryCtx): Promise<boolean> {
+  const userId = await getAuthUserId(ctx);
+  if (userId === null) return false;
+  const user = await ctx.db.get(userId);
+  return user?.role === ROLES.ADMIN;
+}
 
 /**
  * Store a submitted admission application and return a reference number the
@@ -80,5 +89,27 @@ export const submitApplication = mutation({
     );
 
     return { refNumber };
+  },
+});
+
+/**
+ * All submitted applications, newest first. ADMIN ONLY — returns null for
+ * non-admins so applicant data is never exposed to other users.
+ */
+export const listApplications = query({
+  args: {},
+  handler: async (ctx) => {
+    if (!(await isAdmin(ctx))) return null;
+    const applications = await ctx.db.query("applications").collect();
+    return applications.sort((a, b) => b._creationTime - a._creationTime);
+  },
+});
+
+/** A single application by id. ADMIN ONLY — returns null for non-admins. */
+export const getApplication = query({
+  args: { id: v.id("applications") },
+  handler: async (ctx, { id }) => {
+    if (!(await isAdmin(ctx))) return null;
+    return await ctx.db.get(id);
   },
 });

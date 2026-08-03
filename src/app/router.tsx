@@ -26,6 +26,10 @@ const Contact = lazy(() => import("@/app/pages/Contact"));
 const SearchResults = lazy(() => import("@/app/pages/SearchResults"));
 const Policies = lazy(() => import("@/app/pages/Policies"));
 const Portal = lazy(() => import("@/app/pages/Portal"));
+const AdminApplications = lazy(() => import("@/app/pages/AdminApplications"));
+const AdminApplicationDetail = lazy(
+  () => import("@/app/pages/AdminApplicationDetail"),
+);
 const AuthPage = lazy(() => import("@/app/pages/Auth"));
 const NotFound = lazy(() => import("@/app/pages/NotFound"));
 
@@ -56,6 +60,22 @@ export function AppRoutes() {
           element={
             <RequireAuth>
               <Portal />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin/applications"
+          element={
+            <RequireAuth>
+              <AdminApplications />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin/applications/:id"
+          element={
+            <RequireAuth>
+              <AdminApplicationDetail />
             </RequireAuth>
           }
         />

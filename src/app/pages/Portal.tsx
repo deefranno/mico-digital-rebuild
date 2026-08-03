@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import {
   BookOpen,
   CalendarDays,
+  ClipboardList,
   FileText,
   GraduationCap,
   Library,
@@ -12,7 +13,7 @@ import {
   Mail,
   UserRound,
 } from "lucide-react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 const portalLinks = [
   { icon: BookOpen, title: "My Programme", text: "Programme information and course listings (placeholder).", href: "/programmes" },
@@ -26,7 +27,8 @@ const portalLinks = [
 /**
  * Student Portal — the authenticated experience. A placeholder until real
  * student systems (SIS, Moodle, email) are connected; the route is protected
- * by `RequireAuth`.
+ * by `RequireAuth`. Users with the admin role also see the Admissions review
+ * entry point for the applications dashboard.
  */
 export default function Portal() {
   const { user, signOut } = useAuth();
@@ -88,6 +90,20 @@ export default function Portal() {
               </a>
             </li>
           ))}
+
+          {user?.role === "admin" ? (
+            <li className="border border-mico-gold/60 bg-mico-gold-soft p-6 transition-all duration-300 hover:border-mico-gold-deep hover:shadow-lg">
+              <Link to="/admin/applications" className="group block">
+                <span className="flex size-11 items-center justify-center rounded-sm bg-mico-gold text-black transition-colors group-hover:bg-black group-hover:text-mico-gold">
+                  <ClipboardList aria-hidden="true" className="size-5" />
+                </span>
+                <h2 className="mt-4 font-display text-base font-bold text-black">Admissions review</h2>
+                <p className="mt-2 text-sm leading-relaxed text-mico-mid">
+                  View, search and download submitted applications.
+                </p>
+              </Link>
+            </li>
+          ) : null}
         </ul>
 
         <div className="mt-12 flex flex-wrap gap-3">
