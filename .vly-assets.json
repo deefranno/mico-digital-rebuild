@@ -18,7 +18,43 @@
       "fileSize": 431066,
       "uploadedAt": "2026-08-03T18:36:54.110Z",
       "filePath": "/project/public/assets/micohero.webp"
+    },
+    {
+      "id": "asset_1785785863445_voq87zx37",
+      "fileName": "mico1.webp",
+      "originalName": "mico1.webp",
+      "fileType": "image/webp",
+      "fileSize": 416344,
+      "uploadedAt": "2026-08-03T19:37:43.445Z",
+      "filePath": "/project/public/assets/mico1.webp"
+    },
+    {
+      "id": "asset_1785785872559_fyafpzs2r",
+      "fileName": "Mico2.webp",
+      "originalName": "Mico2.webp",
+      "fileType": "image/webp",
+      "fileSize": 238046,
+      "uploadedAt": "2026-08-03T19:37:52.559Z",
+      "filePath": "/project/public/assets/Mico2.webp"
+    },
+    {
+      "id": "asset_1785785877832_vqu7u0fno",
+      "fileName": "mico3.webp",
+      "originalName": "mico3.webp",
+      "fileType": "image/webp",
+      "fileSize": 401350,
+      "uploadedAt": "2026-08-03T19:37:57.832Z",
+      "filePath": "/project/public/assets/mico3.webp"
+    },
+    {
+      "id": "asset_1785785883330_0qbfq7rha",
+      "fileName": "mico4.webp",
+      "originalName": "mico4.webp",
+      "fileType": "image/webp",
+      "fileSize": 2034980,
+      "uploadedAt": "2026-08-03T19:38:03.330Z",
+      "filePath": "/project/public/assets/mico4.webp"
     }
   ],
-  "lastUpdated": "2026-08-03T18:36:54.110Z"
+  "lastUpdated": "2026-08-03T19:38:03.330Z"
 }
