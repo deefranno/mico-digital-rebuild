@@ -1,0 +1,24 @@
+{
+  "assets": [
+    {
+      "id": "asset_1785782025865_enhkxgpyh",
+      "fileName": "micologo.jpeg",
+      "originalName": "micologo.jpeg",
+      "description": "Logo",
+      "fileType": "image/jpeg",
+      "fileSize": 30813,
+      "uploadedAt": "2026-08-03T18:33:45.865Z",
+      "filePath": "/project/public/assets/micologo.jpeg"
+    },
+    {
+      "id": "asset_1785782214110_jtripxh31",
+      "fileName": "micohero.webp",
+      "originalName": "micohero.webp",
+      "fileType": "image/webp",
+      "fileSize": 431066,
+      "uploadedAt": "2026-08-03T18:36:54.110Z",
+      "filePath": "/project/public/assets/micohero.webp"
+    }
+  ],
+  "lastUpdated": "2026-08-03T18:36:54.110Z"
+}
