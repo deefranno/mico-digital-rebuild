@@ -140,8 +140,12 @@ files. **None of it is official** and must be confirmed with the institution:
   replace that file and keep the filename.
 - **Hero photo** — the homepage hero uses the supplied
   `public/assets/micohero.webp`. Replace with final campus photography.
-- **Photos** — every other image URL is centralised in `src/data/images.ts`
-  (Unsplash stock). Replace with licensed campus photography in that one file.
+- **Photos** — the main editorial photos (home "About Mico", campus
+  experience, featured research, student life, About history) use the
+  institution-supplied campus photography in `public/assets/`
+  (`mico1.webp`, `Mico2.webp`, `mico3.webp`, `mico4.webp`), all wired
+  through `src/data/images.ts`. The remaining image URLs are Unsplash
+  stock; replace them with licensed campus photography in that one file.
 - **Statistics** — `src/data/statistics.ts` (count-up values, all marked).
 - **Programme details** — awards, durations, entry requirements, fees and
   deadlines in `src/data/programmes.ts`.

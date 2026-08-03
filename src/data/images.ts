@@ -1,13 +1,14 @@
 /**
- * Centralised placeholder imagery.
+ * Centralised imagery.
  *
  * Every image URL used anywhere in the site lives here so a future content
  * editor can swap in authentic Mico campus photography in one place.
  *
- * PLACEHOLDER NOTICE: all photos below are generic university/education
- * stock imagery from Unsplash and must be replaced with licensed photos of
- * The Mico University College before launch. The hero (`heroCampus`) and
- * crest (`siteConfig.logo`) already use institution-supplied assets.
+ * The crest (`siteConfig.logo`), the homepage hero (`heroCampus`) and the
+ * main editorial photos below use the institution-supplied assets in
+ * `public/assets/`. Any remaining entries are generic university/education
+ * stock imagery from Unsplash and should be replaced with licensed photos of
+ * The Mico University College before launch.
  */
 
 const u = (id: string, w = 1600) =>
@@ -19,9 +20,26 @@ export const images = {
     src: "/assets/micohero.webp",
     alt: "The Mico University College campus in Kingston, Jamaica",
   },
+  // Institution-supplied campus photography (public/assets/).
+  // mico1 — used on the home "About Mico" editorial panel.
+  campusLawn: {
+    src: "/assets/mico1.webp",
+    alt: "Students on the Mico University College campus",
+  },
+  // mico2 — used on the home "Campus & student experience" band.
   studentsWalking: {
-    src: u("photo-1523240795612-9a054b0db644"),
-    alt: "Students walking together across a university campus",
+    src: "/assets/Mico2.webp",
+    alt: "Mico students walking together across the campus",
+  },
+  // mico3 — used as the featured research story image.
+  studentReading: {
+    src: "/assets/mico3.webp",
+    alt: "A Mico student studying on campus",
+  },
+  // mico4 — used on the student life / community sections.
+  community: {
+    src: "/assets/mico4.webp",
+    alt: "Members of the Mico community together on campus",
   },
   graduation: {
     src: u("photo-1523050854058-8df90110c9f1"),
@@ -42,14 +60,6 @@ export const images = {
   library: {
     src: u("photo-1507842217343-583bb7270b66"),
     alt: "Reading hall with rows of bookshelves",
-  },
-  studentReading: {
-    src: u("photo-1544717297-fa95b6ee9643"),
-    alt: "Student reading textbooks at a desk",
-  },
-  campusLawn: {
-    src: u("photo-1564981797816-1043664bf78d"),
-    alt: "University campus lawn with a pathway between buildings",
   },
   hallColumns: {
     src: u("photo-1562774053-701939374585"),
@@ -90,10 +100,6 @@ export const images = {
   music: {
     src: u("photo-1511671782779-c97d3d27a1d4"),
     alt: "Student singing into a microphone on stage",
-  },
-  community: {
-    src: u("photo-1529156069898-49953e39b3ac"),
-    alt: "Group of people talking together outdoors",
   },
   science: {
     src: u("photo-1532094349884-543bc11b234d"),

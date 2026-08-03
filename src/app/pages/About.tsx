@@ -77,8 +77,8 @@ export default function About() {
       <section id="history" className="bg-white py-16 sm:py-20" aria-labelledby="history-heading">
         <div className="container-site grid items-center gap-12 lg:grid-cols-2">
           <img
-            src={images.hallColumns.src}
-            alt={images.hallColumns.alt}
+            src={images.campusLawn.src}
+            alt={images.campusLawn.alt}
             loading="lazy"
             decoding="async"
             className="aspect-[4/3] w-full object-cover"
