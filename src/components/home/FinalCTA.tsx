@@ -1,1 +1,8 @@
-[FILE_TOO_LARGE]: The combined read_files output exceeded the 100,000 character hard limit. This file was truncated after 0 characters. Read it separately or use code_search for the relevant section.
+import { CallToAction } from "@/components/shared/CallToAction";
+import { images } from "@/data/images";
+import { homeCta } from "@/data/site";
+
+/** Closing full-width call to action: "Your Future Starts at Mico." */
+export function FinalCTA() {
+  return <CallToAction cta={homeCta} image={images.graduation} />;
+}
