@@ -246,6 +246,10 @@ export const footerColumns: { heading: string; links: LinkItem[] }[] = [
     heading: "University",
     links: [
       { label: "About Mico", href: "/about" },
+      // Demo CMS pages (WordPress-native). Delete these links once real pages
+      // exist in wp-admin and the menu wiring supplies the footer.
+      { label: "Governance & Leadership", href: "/governance" },
+      { label: "Careers at Mico", href: "/careers" },
       { label: "Research", href: "/research" },
       { label: "Alumni", href: "/alumni" },
       { label: "Contact", href: "/contact" },

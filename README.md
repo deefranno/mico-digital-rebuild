@@ -58,7 +58,8 @@ src/
                          # SearchOverlay, SiteFooter, SiteLayout, ScrollToTop
     shared/              # CTAButton, SectionHeading, Breadcrumbs, PageHeader,
                          # ImageFeature, CallToAction, NewsletterForm,
-                         # FormField, LoadingState/EmptyState/ErrorState, Logo
+                         # FormField, LoadingState/EmptyState/ErrorState, Logo,
+                         # CmsPageRenderer
     ui/                  # shadcn/ui primitives (template)
   data/                  # ALL mock content lives here (clearly labelled)
     site.ts              # Navigation, audience links, contact, footer
@@ -70,6 +71,7 @@ src/
     testimonials.ts      # Placeholder student stories (marked)
     campus.ts            # Campus & student experience content
     research.ts          # Research areas, centres, featured story
+    pages.ts             # Sample WordPress-native CMS pages (/careers, /governance)
     images.ts            # Central image registry (swap images here)
   features/
     programmes/
@@ -125,7 +127,7 @@ every listing component.
 | `/policies` | Privacy, accessibility, terms (placeholder) |
 | `/portal` | Student Portal (protected — sign in via `/auth`) |
 | `/auth` | Sign in (email OTP / guest) |
-| `*` | 404 page |
+| `*` | **WordPress-native CMS page** — any URL not owned by a fixed route is looked up in WordPress Pages and rendered generically; 404 if no page owns it |
 
 ---
 
@@ -157,6 +159,8 @@ files. **None of it is official** and must be confirmed with the institution:
   institution's profiles in `src/data/site.ts`.
 - **All copy** — pages contain italicised "(Placeholder …)" notes.
 - **Forms** — submissions are simulated (`src/lib/forms.ts`).
+- **CMS sample pages** — `src/data/pages.ts` (`/careers`, `/governance`)
+  are illustrative and should be replaced by real WordPress pages.
 
 ---
 
@@ -232,6 +236,34 @@ selection).
 
 > Either way, the UI needs **zero changes**: components keep calling the same
 > getters in `src/lib/content/content.ts`.
+
+### Option C — Native WordPress Pages (the mini-CMS)
+
+Staff can create **brand-new pages with no developer or redeploy**: they write a
+page in wp-admin (**Pages → Add New**), and the site's catch-all route
+(`*` → `src/app/pages/CmsPage.tsx`) fetches it by path and renders it.
+
+- **How it resolves:** the URL path is looked up via WPGraphQL
+  `pageBy(uri:)` (handles nested paths like `/about/history` natively), then
+  the REST `/wp/v2/pages` tree (parent chains resolved client-side) as
+  fallback. Any path WordPress doesn't own renders the standard 404.
+- **What's supported:** headings, paragraphs (with links/emphasis), images
+  with captions, bullet/numbered lists, quotes, buttons, tables and
+  separators — the common Gutenberg blocks. `parseBlocks` in `adapters.ts`
+  converts Gutenberg HTML into the structured `CmsBlock[]` contract rendered
+  by `src/components/shared/CmsPageRenderer.tsx`.
+- **Unknown/exotic blocks** are flattened or dropped rather than breaking the
+  page (e.g. columns flatten to their contents).
+- **Menus:** add the page to the nav from wp-admin **Appearance → Menus** —
+  the menu wiring already feeds the header/footer.
+- **Security:** page HTML is sanitised client-side (scripts, iframes, event
+  handlers and inline styles stripped) before rendering.
+- **Mock fallback:** sample pages in `src/data/pages.ts` (`/careers`,
+  `/governance`) render when WordPress is not configured so the templates can
+  be previewed; delete them once real pages exist in wp-admin.
+- **Limit:** REST resolution fetches up to 100 published pages — plenty for a
+  typical university site; a site with more needs pagination added to
+  `REST_PATHS.pages`.
 
 ---
 

@@ -49,7 +49,11 @@ export interface WPRestPost {
   acf?: Record<string, unknown>;
 }
 
-export interface WPRestPage extends WPRestPost {}
+/** REST: GET /wp/v2/pages (native WordPress Pages). */
+export interface WPRestPage extends WPRestPost {
+  /** id of the parent page; 0 for top-level pages. Used to resolve nested paths. */
+  parent?: number;
+}
 
 export interface WPRestMedia extends WPMedia {}
 
@@ -142,6 +146,18 @@ export interface WPGraphQLProgramme {
     level?: string;
     subjectArea?: string;
   };
+  featuredImage?: { node: WPMediaNode };
+}
+
+/** WPGraphQL: pageBy(uri:) — native WordPress Page. */
+export interface WPGraphQLPage {
+  id: string;
+  slug: string;
+  /** Full URI, e.g. "/careers/" or "/about/history/". */
+  uri: string;
+  title: string;
+  excerpt: string;
+  content: string;
   featuredImage?: { node: WPMediaNode };
 }
 

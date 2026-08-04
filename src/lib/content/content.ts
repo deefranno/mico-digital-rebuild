@@ -17,12 +17,14 @@ import {
 } from "@/data/site";
 import { faculties as mockFaculties } from "@/data/faculties";
 import { newsArticles as mockNews } from "@/data/news";
+import { cmsPages as mockCmsPages } from "@/data/pages";
 import { programmes as mockProgrammes } from "@/data/programmes";
 import { statistics as mockStatistics } from "@/data/statistics";
 import { testimonials as mockTestimonials } from "@/data/testimonials";
 import type {
   AcademicProgramme,
   CalendarEvent,
+  CmsPage,
   Faculty,
   FooterColumn,
   NavigationItem,
@@ -34,6 +36,7 @@ import type {
 
 import { isWordPressConfigured } from "../wordpress/client";
 import {
+  getCmsPageFromWordPress,
   getEventsFromWordPress,
   getFacultiesFromWordPress,
   getFooterColumnsFromWordPress,
@@ -41,6 +44,7 @@ import {
   getNewsFromWordPress,
   getProgrammesFromWordPress,
   getUtilityLinksFromWordPress,
+  normalizePagePath,
 } from "../wordpress/adapters";
 
 const wordpress = isWordPressConfigured();
@@ -109,6 +113,23 @@ export function getStatistics(): Promise<Statistic[]> {
 
 export function getTestimonials(): Promise<Testimonial[]> {
   return Promise.resolve(mockTestimonials);
+}
+
+/* --------------------------------------------------------------------------
+ * CMS pages (native WordPress Pages via the catch-all route)
+ *
+ * Pages are matched by their full route path ("/careers", "/about/history").
+ * When WordPress is configured the adapter resolves the path there (parent
+ * chains included); any path WordPress doesn't own falls back to the mock
+ * sample pages so the template stays previewable.
+ * ------------------------------------------------------------------------ */
+export async function getCmsPageByPath(path: string): Promise<CmsPage | null> {
+  const normalized = normalizePagePath(path);
+  if (wordpress) {
+    const page = await getCmsPageFromWordPress(normalized);
+    if (page) return page;
+  }
+  return mockCmsPages.find((p) => p.path === normalized) ?? null;
 }
 
 /* --------------------------------------------------------------------------
@@ -211,6 +232,11 @@ export async function searchAll(query: string): Promise<SearchResult[]> {
     { title: "News & Events", href: "/news", keywords: "news events announcements" },
     { title: "Alumni", href: "/alumni", keywords: "alumni give back network" },
     { title: "Contact", href: "/contact", keywords: "contact visit campus directions" },
+    ...mockCmsPages.map((p) => ({
+      title: p.title,
+      href: p.path,
+      keywords: `${p.title} ${p.excerpt ?? ""} ${p.slug}`,
+    })),
   ];
   pages.forEach((p) => {
     if (matches(p.title) || matches(p.keywords)) {

@@ -127,6 +127,25 @@ export const GRAPHQL_QUERIES = {
     }
   `,
 
+  /**
+   * A native WordPress Page by its full URI (resolves nested paths like
+   * "/about/history/" natively). Deliberately limited to core fields so the
+   * query works on any WPGraphQL install without extra plugins.
+   */
+  PAGE_BY_URI: /* GraphQL */ `
+    query GetPageByUri($uri: ID!) {
+      pageBy(uri: $uri) {
+        id
+        slug
+        uri
+        title
+        excerpt
+        content
+        featuredImage { node { sourceUrl altText } }
+      }
+    }
+  `,
+
   /** All navigation menus (wp-admin Appearance > Menus). */
   MENUS: /* GraphQL */ `
     query GetMenus($first: Int!) {
@@ -161,6 +180,14 @@ export const REST_PATHS = {
   programmes: "/wp/v2/programme",
   faculties: "/wp/v2/faculty",
   media: (id: number) => `/wp/v2/media/${id}`,
+  /**
+   * Native WordPress pages. We fetch the whole tree (flat list) and resolve
+   * nested paths client-side from each page's `parent`. `per_page=100` is the
+   * WordPress maximum — fine for a typical university site; raise pagination
+   * handling if a site ever exceeds ~100 published pages.
+   */
+  pages:
+    "/wp/v2/pages?per_page=100&status=publish&_fields=id,slug,parent,title,excerpt,content,featured_media,link,meta",
   menus: "/wp/v2/menus",
   menuItemsForMenu: (id: number) =>
     `/wp/v2/menu-items?menus=${id}&per_page=100`,

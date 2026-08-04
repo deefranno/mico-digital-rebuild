@@ -32,7 +32,9 @@ const AdminApplicationDetail = lazy(
 );
 const AdminUsers = lazy(() => import("@/app/pages/AdminUsers"));
 const AuthPage = lazy(() => import("@/app/pages/Auth"));
-const NotFound = lazy(() => import("@/app/pages/NotFound"));
+// Catch-all: resolves WordPress-native CMS pages by path; renders the 404
+// when no fixed route or CMS page owns the URL.
+const CmsPage = lazy(() => import("@/app/pages/CmsPage"));
 
 export function AppRoutes() {
   return (
@@ -88,7 +90,7 @@ export function AppRoutes() {
             </RequireAuth>
           }
         />
-        <Route path="*" element={<NotFound />} />
+        <Route path="*" element={<CmsPage />} />
       </Route>
 
       {/* Standalone auth flow (no public chrome) */}

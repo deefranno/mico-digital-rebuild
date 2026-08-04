@@ -74,6 +74,46 @@ export interface NewsArticle extends Post {
 }
 
 /* --------------------------------------------------------------------------
+ * CMS pages (WordPress-native pages rendered by the catch-all route)
+ *
+ * A `CmsPage` is a generic, editor-created page. Its body is a list of
+ * `CmsBlock`s produced by the WordPress adapter (parsed from Gutenberg
+ * content) or authored directly in the mock data. The renderer in
+ * `src/components/shared/CmsPageRenderer.tsx` turns each block type into a
+ * styled component, so pages need no route or component code to exist.
+ * ------------------------------------------------------------------------ */
+
+/** One editor-created link/button on a CMS page. */
+export interface CmsButtonLink {
+  label: string;
+  href: string;
+  variant?: "gold" | "black" | "outline" | "outline-light" | "link";
+}
+
+export type CmsBlock =
+  | { type: "heading"; level: 2 | 3 | 4; text: string }
+  | { type: "paragraph"; text: string }
+  | { type: "image"; src: string; alt: string; caption?: string }
+  | { type: "list"; ordered: boolean; items: string[] }
+  | { type: "quote"; text: string; citation?: string }
+  | { type: "buttons"; buttons: CmsButtonLink[] }
+  | { type: "table"; headers: string[]; rows: string[][] }
+  | { type: "separator" };
+
+/** A WordPress-authored page rendered by the site's catch-all route. */
+export interface CmsPage {
+  /** Final URL segment, e.g. "careers". */
+  slug: string;
+  /** Full route path, e.g. "/careers" or "/about/history". */
+  path: string;
+  title: string;
+  excerpt?: string;
+  heroImage?: MediaImage;
+  seo?: { title?: string; description?: string };
+  blocks: CmsBlock[];
+}
+
+/* --------------------------------------------------------------------------
  * Events
  * ------------------------------------------------------------------------ */
 

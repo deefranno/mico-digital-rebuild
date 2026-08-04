@@ -18,6 +18,9 @@ import { programmes as mockProgrammes } from "@/data/programmes";
 import type {
   AcademicProgramme,
   CalendarEvent,
+  CmsBlock,
+  CmsButtonLink,
+  CmsPage,
   Faculty,
   FooterColumn,
   LinkItem,
@@ -33,11 +36,13 @@ import type {
   WPGraphQLMenu,
   WPGraphQLMenuItem,
   WPGraphQLNews,
+  WPGraphQLPage,
   WPGraphQLProgramme,
   WPRestEvent,
   WPRestMenu,
   WPRestMenuItem,
   WPRestNews,
+  WPRestPage,
   WPRestProgramme,
 } from "./types";
 
@@ -439,4 +444,283 @@ export async function getFooterColumnsFromWordPress(): Promise<FooterColumn[]> {
     }
   }
   return columns.length ? columns : mockFooterColumns;
+}
+
+/* --------------------------------------------------------------------------
+ * CMS pages (native WordPress Pages rendered by the catch-all route)
+ *
+ * WordPress page content arrives as rendered Gutenberg HTML. `parseBlocks`
+ * converts that HTML into the structured `CmsBlock[]` the renderer knows how
+ * to style; inline text keeps its (sanitised) HTML so links and emphasis made
+ * in the editor survive. Unknown or exotic blocks are flattened or dropped
+ * rather than breaking the page.
+ * ------------------------------------------------------------------------ */
+
+/** Normalise a route path for comparison ("/careers/", "careers" → "/careers"). */
+export function normalizePagePath(path: string): string {
+  let p = path.trim();
+  if (!p.startsWith("/")) p = `/${p}`;
+  p = p.replace(/\/+$/, "");
+  try {
+    p = decodeURIComponent(p);
+  } catch {
+    // keep raw path on malformed encoding
+  }
+  return p;
+}
+
+/**
+ * Strip dangerous markup from inline WordPress content while preserving the
+ * inline formatting editors produce (links, emphasis, code). External links
+ * are forced to open in a new tab.
+ */
+function sanitizeInlineHtml(html: string): string {
+  if (!html || typeof document === "undefined") return html;
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const root = doc.body;
+  root
+    .querySelectorAll(
+      "script,style,iframe,object,embed,form,input,textarea,select,noscript,link,meta,svg,video,audio,source",
+    )
+    .forEach((el) => el.remove());
+
+  const allowedAttrs = new Set(["href", "src", "alt", "title", "target", "rel"]);
+  root.querySelectorAll("*").forEach((el) => {
+    if (el.tagName === "A") {
+      const href = el.getAttribute("href") ?? "";
+      if (/^https?:\/\//i.test(href)) {
+        el.setAttribute("target", "_blank");
+        el.setAttribute("rel", "noopener noreferrer");
+      }
+    }
+    Array.from(el.attributes).forEach((attr) => {
+      if (attr.name.toLowerCase().startsWith("on") || !allowedAttrs.has(attr.name)) {
+        el.removeAttribute(attr.name);
+      }
+    });
+  });
+  return root.innerHTML;
+}
+
+function parseTable(table: HTMLTableElement): CmsBlock {
+  let headers: string[] = [];
+  let rows: string[][] = [];
+
+  const head = table.querySelector("thead");
+  const headRow = head?.querySelector("tr");
+  if (headRow) {
+    headers = Array.from(headRow.children).map((c) => c.textContent?.trim() ?? "");
+  }
+
+  const body = table.querySelector("tbody");
+  if (body) {
+    const trs = Array.from(body.querySelectorAll("tr"));
+    const parsed = trs.map((tr) =>
+      Array.from(tr.children).map((c) => c.textContent?.trim() ?? ""),
+    );
+    if (!headers.length && parsed.length) {
+      headers = parsed[0];
+      rows = parsed.slice(1);
+    } else {
+      rows = parsed;
+    }
+  }
+
+  return { type: "table", headers, rows };
+}
+
+/** Convert one DOM node (and its children) into CmsBlocks, appended to `blocks`. */
+function collectBlocks(node: Node, blocks: CmsBlock[]): void {
+  if (node.nodeType !== 1) return; // ignore text nodes / comments at this level
+  const el = node as HTMLElement;
+  const tag = el.tagName.toLowerCase();
+  const cls = typeof el.className === "string" ? el.className : "";
+
+  // Gutenberg buttons wrapper
+  if (cls.includes("wp-block-buttons")) {
+    const buttons: CmsButtonLink[] = [];
+    el.querySelectorAll(".wp-block-button").forEach((btn) => {
+      const a = btn.querySelector("a");
+      if (!a) return;
+      const label = stripHtml(a.innerHTML) || "Learn more";
+      const href = normalizeHref(a.getAttribute("href") ?? "#");
+      buttons.push({ label, href });
+    });
+    if (buttons.length) blocks.push({ type: "buttons", buttons });
+    return;
+  }
+
+  // Images (bare or wrapped in figure / wp-block-image)
+  if (tag === "figure" || cls.includes("wp-block-image")) {
+    const img = el.querySelector("img");
+    if (img) {
+      blocks.push({
+        type: "image",
+        src: img.getAttribute("src") ?? "",
+        alt: img.getAttribute("alt") ?? "",
+        caption: el.querySelector("figcaption")?.textContent?.trim() || undefined,
+      });
+      return;
+    }
+    if (tag === "figure") {
+      const table = el.querySelector("table");
+      if (table) {
+        blocks.push(parseTable(table));
+        return;
+      }
+    }
+  }
+
+  // Tables
+  if (tag === "table" || cls.includes("wp-block-table")) {
+    const table = tag === "table" ? (el as HTMLTableElement) : el.querySelector("table");
+    if (table) blocks.push(parseTable(table));
+    return;
+  }
+
+  // Quotes
+  if (tag === "blockquote") {
+    const quoteText = sanitizeInlineHtml(
+      el.querySelector("p")?.innerHTML ?? el.innerHTML,
+    );
+    const citation =
+      el.querySelector("cite")?.textContent?.trim() ??
+      el.querySelector("footer")?.textContent?.trim() ??
+      undefined;
+    blocks.push({ type: "quote", text: quoteText, citation });
+    return;
+  }
+
+  // Lists
+  if (tag === "ul" || tag === "ol") {
+    const items = Array.from(el.querySelectorAll(":scope > li")).map((li) =>
+      sanitizeInlineHtml(li.innerHTML),
+    );
+    if (items.length) blocks.push({ type: "list", ordered: tag === "ol", items });
+    return;
+  }
+
+  // Headings
+  if (/^h[1-6]$/.test(tag)) {
+    const text = sanitizeInlineHtml(el.innerHTML);
+    const level = tag === "h1" || tag === "h2" ? 2 : tag === "h3" ? 3 : 4;
+    if (text.trim()) blocks.push({ type: "heading", level, text });
+    return;
+  }
+
+  // Paragraphs
+  if (tag === "p") {
+    const text = sanitizeInlineHtml(el.innerHTML).trim();
+    if (text) blocks.push({ type: "paragraph", text });
+    return;
+  }
+
+  // Separators
+  if (tag === "hr") {
+    blocks.push({ type: "separator" });
+    return;
+  }
+
+  // Bare images
+  if (tag === "img") {
+    blocks.push({
+      type: "image",
+      src: el.getAttribute("src") ?? "",
+      alt: el.getAttribute("alt") ?? "",
+    });
+    return;
+  }
+
+  // Generic wrappers (div, section, wp-block-group, columns, …): flatten children
+  Array.from(el.childNodes).forEach((child) => collectBlocks(child, blocks));
+}
+
+/** Parse rendered Gutenberg HTML into the structured CmsBlock[] contract. */
+function parseBlocks(html: string): CmsBlock[] {
+  if (!html || typeof document === "undefined") return [];
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const blocks: CmsBlock[] = [];
+  Array.from(doc.body?.childNodes ?? []).forEach((child) => collectBlocks(child, blocks));
+  return blocks;
+}
+
+function fromGraphQlPage(raw: WPGraphQLPage, path: string): CmsPage {
+  return {
+    slug: raw.slug,
+    path,
+    title: raw.title,
+    excerpt: stripHtml(raw.excerpt),
+    heroImage: raw.featuredImage?.node
+      ? {
+          src: raw.featuredImage.node.sourceUrl,
+          alt: raw.featuredImage.node.altText || raw.title,
+        }
+      : undefined,
+    blocks: parseBlocks(raw.content),
+  };
+}
+
+function fromRestPage(raw: WPRestPage, path: string): CmsPage {
+  return {
+    slug: raw.slug,
+    path,
+    title: raw.title.rendered,
+    excerpt: stripHtml(raw.excerpt.rendered ?? ""),
+    heroImage: raw.meta?.featured_image
+      ? {
+          src: raw.meta.featured_image as string,
+          alt: (raw.meta?.featured_image_alt as string) ?? raw.title.rendered,
+        }
+      : undefined,
+    blocks: parseBlocks(raw.content.rendered),
+  };
+}
+
+/**
+ * Fetch a native WordPress Page by its full route path (e.g. "/careers" or
+ * "/about/history"). Tries WPGraphQL's `pageBy(uri:)` first — it resolves
+ * nested paths natively — then the REST pages tree, resolving the parent
+ * chain ourselves. Returns null when WordPress has no such page so the caller
+ * falls back to mock data / NotFound.
+ */
+export async function getCmsPageFromWordPress(path: string): Promise<CmsPage | null> {
+  const normalized = normalizePagePath(path);
+
+  try {
+    if (getGraphQlUrl()) {
+      const data = await fetchGraphQL<{ pageBy: WPGraphQLPage | null }>(
+        GRAPHQL_QUERIES.PAGE_BY_URI,
+        { uri: normalized },
+      );
+      if (data?.pageBy) return fromGraphQlPage(data.pageBy, normalized);
+      return null;
+    }
+  } catch (err) {
+    console.warn("[content] WPGraphQL page lookup failed, trying REST:", err);
+  }
+
+  try {
+    const pages = await fetchRest<WPRestPage[]>(REST_PATHS.pages, {
+      cache: "force-cache",
+    });
+    const byId = new Map<number, WPRestPage>();
+    for (const p of pages) byId.set(p.id, p);
+    const resolvePath = (p: WPRestPage): string => {
+      const segments = [p.slug];
+      let parent = p.parent;
+      while (parent) {
+        const ancestor = byId.get(parent);
+        if (!ancestor) break;
+        segments.unshift(ancestor.slug);
+        parent = ancestor.parent;
+      }
+      return `/${segments.join("/")}`;
+    };
+    const match = pages.find((p) => normalizePagePath(resolvePath(p)) === normalized);
+    if (match) return fromRestPage(match, normalized);
+    return null;
+  } catch (err) {
+    console.warn("[content] WordPress page lookup failed:", err);
+    return null;
+  }
 }
