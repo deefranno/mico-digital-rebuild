@@ -1,1 +1,16 @@
-[FILE_TOO_LARGE]: The combined read_files output exceeded the 100,000 character hard limit. This file was truncated after 0 characters. Read it separately or use code_search for the relevant section.
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- PLACEHOLDER: replace https://www.mico.edu.jm with the live domain before launch -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://www.mico.edu.jm/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://www.mico.edu.jm/about</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.mico.edu.jm/admissions</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.mico.edu.jm/academics</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.mico.edu.jm/programmes</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.mico.edu.jm/faculties</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.mico.edu.jm/research</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.mico.edu.jm/student-life</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.mico.edu.jm/news</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.mico.edu.jm/events</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.mico.edu.jm/contact</loc><changefreq>yearly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.mico.edu.jm/search</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+</urlset>
