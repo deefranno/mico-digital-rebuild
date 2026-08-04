@@ -52,7 +52,7 @@ src/
   components/
     cards/               # ProgrammeCard, FacultyCard, NewsCard, EventCard,
                          # FeaturedNews, StatisticCard, TestimonialCard
-    forms/               # RequestInfoForm, GeneralEnquiryForm, CampusVisitForm
+    forms/               # RequestInfoForm, GeneralEnquiryForm
     home/                # Homepage sections (Hero, StatsSection, …)
     layout/              # UtilityBar, SiteHeader, MegaMenu, MobileNavigation,
                          # SearchOverlay, SiteFooter, SiteLayout, ScrollToTop
@@ -122,7 +122,7 @@ every listing component.
 | `/events` | Events listing (category filter) |
 | `/events/:slug` | Individual event |
 | `/alumni` | Alumni |
-| `/contact` | Contact — details, general enquiry form, campus visit form |
+| `/contact` | Contact — details, Google map, general enquiry form |
 | `/search?q=…` | Search results (site-wide) |
 | `/policies` | Privacy, accessibility, terms (placeholder) |
 | `/portal` | Student Portal (protected — sign in via `/auth`) |

@@ -1,4 +1,4 @@
-import { RequestInfoForm } from "@/components/forms/RequestInfoForm";
+import { AdmissionForm } from "@/components/forms/AdmissionForm";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 import { CTAButton } from "@/components/shared/CTAButton";
@@ -48,7 +48,7 @@ export default function Admissions() {
         description="Everything you need to apply — requirements, fees, scholarships and key dates. All information on this page is placeholder until confirmed by the institution."
         crumbs={[{ label: "Admissions" }]}
       >
-        <CTAButton href="/admissions/apply" variant="gold">
+        <CTAButton href="#online-form" variant="gold">
           Start your application
           <ArrowRight aria-hidden="true" className="size-4" />
         </CTAButton>
@@ -175,34 +175,52 @@ export default function Admissions() {
         </div>
       </section>
 
-      {/* Key dates + form */}
-      <section id="dates" className="bg-mico-light py-16 sm:py-20" aria-labelledby="dates-heading">
-        <div className="container-site grid gap-12 lg:grid-cols-2">
-          <div>
-            <SectionHeading id="dates-heading" eyebrow="Key dates" title="Deadlines at a glance" />
-            <ul className="mt-8 space-y-4">
+      {/* Online application — the multi-step wizard */}
+      <section
+        id="online-form"
+        className="scroll-mt-24 bg-mico-light py-16 sm:py-20"
+        aria-labelledby="online-heading"
+      >
+        <div className="container-site">
+          <SectionHeading
+            id="online-heading"
+            eyebrow="Apply online"
+            title="Online application form"
+          />
+          <p className="mt-5 max-w-2xl text-sm leading-relaxed text-mico-mid">
+            The application is split into ten short guided steps covering
+            everything the Admissions Office needs — personal details, programme
+            choice, education history, qualifications, referees and supporting
+            documents. You can move back and forth and change any answer before
+            submitting. Expect about 20 minutes.
+          </p>
+
+          {/* Key dates — just above the form */}
+          <div className="mt-8 flex flex-col gap-4 rounded-sm border border-black/10 bg-white p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <CalendarDays
+                aria-hidden="true"
+                className="size-5 text-mico-gold-deep"
+              />
+              <h2 className="font-display text-base font-bold text-black">
+                Key dates
+              </h2>
+            </div>
+            <ul className="flex flex-col gap-3 sm:flex-row sm:gap-8">
               {deadlines.map((d) => (
-                <li key={d.term} className="flex items-start gap-4 border border-black/10 bg-white p-5">
-                  <CalendarDays aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-mico-gold-deep" />
-                  <div>
-                    <h3 className="font-display text-sm font-bold text-black">{d.term}</h3>
-                    <p className="mt-1 text-sm text-mico-mid">
-                      Apply by <span className="font-semibold text-black">{d.deadline}</span>{" "}
-                      <span className="text-xs">({d.note})</span>
-                    </p>
-                  </div>
+                <li key={d.term} className="flex items-baseline gap-2 text-sm">
+                  <span className="text-mico-mid">{d.term}</span>
+                  <span className="font-semibold text-black">{d.deadline}</span>
                 </li>
               ))}
             </ul>
-            <p className="mt-4 text-xs text-mico-mid">
+            <p className="text-xs text-mico-mid">
               Placeholder dates — confirm with the Admissions Office.
             </p>
           </div>
-          <div id="enquiry" className="border border-black/10 bg-white p-8">
-            <SectionHeading eyebrow="Request information" title="Ask us anything" />
-            <div className="mt-6">
-              <RequestInfoForm />
-            </div>
+
+          <div className="mt-6">
+            <AdmissionForm />
           </div>
         </div>
       </section>
