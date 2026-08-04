@@ -44,7 +44,7 @@ export default function Apply() {
     <>
       <Seo
         title="Application for Admission"
-        description="Apply online for admission to The Mico University College — complete the interactive application form or download the printable PDF version."
+        description="Apply online for admission to The Mico University College — complete the interactive multi-step application form or download the printable PDF version."
         path="/admissions/apply"
         jsonLd={[
           breadcrumbJsonLd([
@@ -82,21 +82,43 @@ export default function Apply() {
         <div className="container-site grid gap-10 lg:grid-cols-[1fr_320px] lg:items-start">
           {/* Main form column */}
           <div id="online-form" className="min-w-0 scroll-mt-24">
-            <div className="mb-8 flex items-center justify-between gap-4 border-b border-black/10 pb-5">
-              <div>
-                <h2 className="font-display text-2xl font-extrabold text-black">
-                  Online application
-                </h2>
-                <p className="mt-1 text-sm text-mico-mid">
-                  Five short sections — you can complete it in about ten
-                  minutes.
-                </p>
-              </div>
-              <span className="hidden shrink-0 items-center gap-2 rounded-sm border border-black/10 bg-mico-light px-3 py-1.5 text-xs font-semibold text-mico-mid sm:inline-flex">
-                <span className="size-1.5 rounded-full bg-mico-gold" />
-                No account needed
-              </span>
+            <div className="mb-8 border-b border-black/10 pb-5">
+              <h2 className="font-display text-2xl font-extrabold text-black">
+                Online application
+              </h2>
+              <p className="mt-1 max-w-xl text-sm text-mico-mid">
+                Ten short sections covering everything the Admissions Office
+                needs. You can move back and forth and change any answer
+                before submitting — expect about 20 minutes.
+              </p>
             </div>
+
+            {/* Key dates — just above the form */}
+            <div className="mb-8 flex flex-col gap-4 rounded-sm border border-black/10 bg-mico-light p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-2">
+                <CalendarDays
+                  aria-hidden="true"
+                  className="size-5 text-mico-gold-deep"
+                />
+                <h2 className="font-display text-base font-bold text-black">
+                  Key dates
+                </h2>
+              </div>
+              <ul className="flex flex-col gap-3 sm:flex-row sm:gap-8">
+                {keyDates.map((d) => (
+                  <li key={d.term} className="flex items-baseline gap-2 text-sm">
+                    <span className="text-mico-mid">{d.term}</span>
+                    <span className="font-semibold text-black">
+                      {d.deadline}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs text-mico-mid">
+                Placeholder dates — confirm with the Admissions Office.
+              </p>
+            </div>
+
             <AdmissionForm />
           </div>
 
@@ -125,28 +147,6 @@ export default function Apply() {
               <p className="mt-3 text-xs text-mico-mid">
                 A4 PDF, opens in your browser's print preview — use “Save as
                 PDF” or print directly.
-              </p>
-            </div>
-
-            <div className="border border-black/10 bg-white p-6">
-              <div className="flex items-center gap-2">
-                <CalendarDays aria-hidden="true" className="size-5 text-mico-gold-deep" />
-                <h2 className="font-display text-base font-bold text-black">
-                  Key dates
-                </h2>
-              </div>
-              <ul className="mt-4 space-y-3">
-                {keyDates.map((d) => (
-                  <li key={d.term} className="flex items-start justify-between gap-3 text-sm">
-                    <span className="text-mico-mid">{d.term}</span>
-                    <span className="shrink-0 font-semibold text-black">
-                      {d.deadline}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-3 text-xs text-mico-mid">
-                Placeholder dates — confirm with the Admissions Office.
               </p>
             </div>
 
