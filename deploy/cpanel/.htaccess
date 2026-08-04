@@ -1,0 +1,56 @@
+# =============================================================================
+# cPanel deployment — The Mico University College (Vite + React SPA)
+# -----------------------------------------------------------------------------
+# Copy this file into the same directory as index.html on the server
+# (e.g. public_html/.htaccess for a site-root install). This is the cPanel
+# equivalent of the vercel.json SPA rewrite: unknown paths fall back to
+# index.html so client-side routes (/programmes/..., /admin/applications/...)
+# work on refresh and deep links.
+# =============================================================================
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # --- SPA fallback: send anything that isn't a real file/dir to index.html
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ /index.html [L]
+</IfModule>
+
+# -----------------------------------------------------------------------------
+# Security headers (optional but recommended)
+# -----------------------------------------------------------------------------
+<IfModule mod_headers.c>
+    # Keep the app in a frame of its own making; blocks clickjacking
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    # Only applies when served over HTTPS (cPanel AutoSSL)
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</IfModule>
+
+# -----------------------------------------------------------------------------
+# Caching — hashed build assets (assets/*-HASH.js/css) are immutable; index.html
+# is tiny and must stay fresh so new deploys are picked up immediately.
+# -----------------------------------------------------------------------------
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/html "access plus 0 seconds"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+
+# -----------------------------------------------------------------------------
+# WordPress coexistence
+# -----------------------------------------------------------------------------
+# If WordPress also lives on this host, do NOT put both apps in the same
+# directory. Preferred layouts:
+#   - SPA at public_html/ (this .htaccess), WordPress at /blog or a subdomain
+#   - WordPress at public_html/, SPA in a subfolder with ITS OWN .htaccess
+#       (change the RewriteRule above to /subfolder/index.html)
+# WordPress's own rules live in its directory and are untouched by this file.
