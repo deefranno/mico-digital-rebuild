@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 
 /**
  * Floating "back to top" button. Appears after the visitor scrolls past the
- * first viewport, with a gold progress ring that fills as they descend and a
- * smooth scroll back to the top on click. Matches the site's black/gold
- * minimalism and includes focus + reduced-motion support.
+ * first viewport with a spring pop-in animation, shows a black progress ring
+ * that fills as they descend, and smooth-scrolls back to the top on click.
+ * Gold button with a black arrow that fully reverses to a black button with a
+ * gold arrow + gold ring on hover. Includes focus + reduced-motion support.
  */
 export function BackToTop() {
   const [visible, setVisible] = useState(false);
@@ -42,16 +43,21 @@ export function BackToTop() {
       onClick={scrollToTop}
       aria-label="Back to top"
       tabIndex={visible ? 0 : -1}
+      style={{ position: "fixed", bottom: "1.5rem", right: "1.5rem", zIndex: 50 }}
       className={cn(
-        "group fixed bottom-6 right-6 z-50 flex size-12 items-center justify-center rounded-full bg-black text-white shadow-lg shadow-black/30 transition-all duration-300 motion-reduce:transition-none",
-        "hover:-translate-y-1 hover:bg-mico-gold hover:text-black hover:shadow-xl hover:shadow-mico-gold/30",
-        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mico-gold",
+        "group flex size-12 items-center justify-center rounded-full",
+        // Default: gold button, black arrow
+        "bg-mico-gold text-mico-black shadow-lg shadow-mico-gold/40 ring-1 ring-mico-gold-deep/30",
+        // Hover: fully reversed — black button, gold arrow
+        "hover:-translate-y-1 hover:bg-mico-black hover:text-mico-gold hover:shadow-xl hover:shadow-black/40 hover:ring-mico-gold",
+        "transition-all duration-200 ease-out motion-reduce:transition-none",
+        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mico-black",
         visible
-          ? "translate-y-0 opacity-100"
+          ? "animate-back-to-top-pop"
           : "pointer-events-none translate-y-4 opacity-0",
       )}
     >
-      {/* Scroll-progress ring */}
+      {/* Scroll-progress ring — colors swap on hover alongside the button */}
       <svg
         aria-hidden="true"
         viewBox="0 0 48 48"
@@ -64,7 +70,7 @@ export function BackToTop() {
           fill="none"
           stroke="currentColor"
           strokeWidth="2.5"
-          className="text-white/20 transition-colors duration-300 group-hover:text-black/15"
+          className="text-black/15 transition-colors duration-200 group-hover:text-mico-gold/25"
         />
         <circle
           cx="24"
@@ -76,12 +82,12 @@ export function BackToTop() {
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={circumference * (1 - progress)}
-          className="text-mico-gold transition-colors duration-300 group-hover:text-black"
+          className="text-mico-black transition-colors duration-200 group-hover:text-mico-gold"
         />
       </svg>
       <ArrowUp
         aria-hidden="true"
-        className="size-5 transition-transform duration-300 group-hover:-translate-y-0.5 motion-reduce:transition-none"
+        className="size-5 transition-transform duration-200 group-hover:-translate-y-0.5 motion-reduce:transition-none"
       />
     </button>
   );
