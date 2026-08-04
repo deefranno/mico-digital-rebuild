@@ -7,6 +7,11 @@
  * called when WordPress is configured.
  */
 import { events as mockEvents } from "@/data/events";
+import {
+  footerColumns as mockFooterColumns,
+  mainNavigation as mockMainNavigation,
+  utilityLinks as mockUtilityLinks,
+} from "@/data/site";
 import { faculties as mockFaculties } from "@/data/faculties";
 import { newsArticles as mockNews } from "@/data/news";
 import { programmes as mockProgrammes } from "@/data/programmes";
@@ -14,16 +19,24 @@ import type {
   AcademicProgramme,
   CalendarEvent,
   Faculty,
+  FooterColumn,
+  LinkItem,
+  NavigationItem,
   NewsArticle,
+  UtilityLink,
 } from "@/types";
 
-import { fetchGraphQL, fetchRest, getGraphQlUrl } from "./client";
+import { fetchGraphQL, fetchRest, getGraphQlUrl, getRestBase } from "./client";
 import { GRAPHQL_QUERIES, REST_PATHS } from "./queries";
 import type {
   WPGraphQLEvent,
+  WPGraphQLMenu,
+  WPGraphQLMenuItem,
   WPGraphQLNews,
   WPGraphQLProgramme,
   WPRestEvent,
+  WPRestMenu,
+  WPRestMenuItem,
   WPRestNews,
   WPRestProgramme,
 } from "./types";
@@ -254,3 +267,176 @@ export async function getFacultiesFromWordPress(): Promise<Faculty[]> {
 }
 
 type WPRestPostLike = { id: number; slug: string; title: { rendered: string }; excerpt: { rendered: string }; content: { rendered: string } };
+
+/* --------------------------------------------------------------------------
+ * Menus & navigation (wp-admin Appearance > Menus)
+ * ------------------------------------------------------------------------ */
+
+/** Names we look for when choosing which wp-admin menu feeds which region. */
+const MENU_CANDIDATES = {
+  main: ["Main Navigation", "Main", "Primary", "Header"],
+  utility: ["Utility Links", "Utility", "Top Bar", "Secondary"],
+  footer: ["Footer", "Footer Navigation", "Footer Links", "Footer Menu"],
+} as const;
+
+type MenuKind = keyof typeof MENU_CANDIDATES;
+
+/**
+ * Convert a WordPress menu-item URL into an app href. Links that resolve to
+ * this site (same origin as the app or the configured WordPress host) become
+ * relative SPA paths; genuinely external links stay absolute so the UI can
+ * render them as <a target="_blank">.
+ */
+function normalizeHref(url: string): string {
+  if (!url) return "#";
+  if (/^https?:\/\//i.test(url)) {
+    try {
+      const parsed = new URL(url);
+      const knownOrigins = [getRestBase(), getGraphQlUrl()]
+        .filter(Boolean)
+        .map((u) => {
+          try {
+            return new URL(u).origin;
+          } catch {
+            return null;
+          }
+        })
+        .filter((o): o is string => Boolean(o));
+      const isSiteLink =
+        parsed.origin === window.location.origin ||
+        knownOrigins.includes(parsed.origin);
+      if (isSiteLink) return `${parsed.pathname}${parsed.hash}`;
+      return url; // external link
+    } catch {
+      return url;
+    }
+  }
+  return url.startsWith("/") ? url : `/${url}`;
+}
+
+/** Pick the best menu by name for a region, falling back to the first. */
+function pickMenu<T extends { name: string; slug?: string }>(
+  menus: T[],
+  candidates: readonly string[],
+): T | undefined {
+  if (!menus.length) return undefined;
+  const norm = (s: string) =>
+    s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  const wanted = candidates.map(norm);
+  return (
+    menus.find((m) => wanted.includes(norm(m.name))) ??
+    menus.find((m) => m.slug && wanted.includes(norm(m.slug))) ??
+    menus[0]
+  );
+}
+
+/** Build a nested NavigationItem tree from flat REST menu items. */
+function menuTreeFromRest(items: WPRestMenuItem[]): NavigationItem[] {
+  const sorted = [...items].sort((a, b) => a.menu_order - b.menu_order);
+  const nodes = new Map<number, NavigationItem>();
+  for (const item of sorted) {
+    nodes.set(item.id, {
+      label: stripHtml(item.title?.rendered || item.attr_title || "Link"),
+      href: normalizeHref(item.url),
+      description: item.description || undefined,
+    });
+  }
+  const roots: NavigationItem[] = [];
+  for (const item of sorted) {
+    const node = nodes.get(item.id)!;
+    if (item.parent && nodes.has(item.parent)) {
+      const parent = nodes.get(item.parent)!;
+      parent.children = parent.children ?? [];
+      parent.children.push(node);
+    } else {
+      roots.push(node);
+    }
+  }
+  return roots;
+}
+
+/** Build a nested NavigationItem tree from flat WPGraphQL menu items. */
+function menuTreeFromGraphQl(items: WPGraphQLMenuItem[]): NavigationItem[] {
+  const sorted = [...items].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const nodes = new Map<number, NavigationItem>();
+  for (const item of sorted) {
+    nodes.set(item.databaseId, {
+      label: stripHtml(item.label),
+      href: normalizeHref(item.url),
+      description: item.description || undefined,
+    });
+  }
+  const roots: NavigationItem[] = [];
+  for (const item of sorted) {
+    const node = nodes.get(item.databaseId)!;
+    if (item.parentId && nodes.has(item.parentId)) {
+      const parent = nodes.get(item.parentId)!;
+      parent.children = parent.children ?? [];
+      parent.children.push(node);
+    } else {
+      roots.push(node);
+    }
+  }
+  return roots;
+}
+
+/**
+ * Fetch the nested tree for one menu region (main / utility / footer) from
+ * WordPress, returning null so the caller falls back to mock data.
+ */
+async function getMenuTreeFromWordPress(kind: MenuKind): Promise<NavigationItem[] | null> {
+  try {
+    if (getGraphQlUrl()) {
+      const data = await fetchGraphQL<{ menus: { nodes: WPGraphQLMenu[] } }>(
+        GRAPHQL_QUERIES.MENUS,
+        { first: 50 },
+      );
+      const menus = data?.menus?.nodes ?? [];
+      const menu = pickMenu(menus, MENU_CANDIDATES[kind]);
+      const items = menu?.menuItems?.nodes ?? [];
+      if (items.length) return menuTreeFromGraphQl(items);
+    }
+    const menus = await fetchRest<WPRestMenu[]>(REST_PATHS.menus, {
+      cache: "force-cache",
+    });
+    const menu = pickMenu(menus, MENU_CANDIDATES[kind]);
+    if (!menu) return null;
+    const items = await fetchRest<WPRestMenuItem[]>(
+      REST_PATHS.menuItemsForMenu(menu.id),
+      { cache: "force-cache" },
+    );
+    if (!items.length) return null;
+    return menuTreeFromRest(items);
+  } catch (err) {
+    console.warn(`[content] WordPress ${kind} menu unavailable, using mock data:`, err);
+    return null;
+  }
+}
+
+/** Main navigation (mega menu + mobile drawer). */
+export async function getMainNavigationFromWordPress(): Promise<NavigationItem[]> {
+  return (await getMenuTreeFromWordPress("main")) ?? mockMainNavigation;
+}
+
+/** Utility-bar links (black strip above the header). */
+export async function getUtilityLinksFromWordPress(): Promise<UtilityLink[]> {
+  const tree = await getMenuTreeFromWordPress("utility");
+  if (!tree) return mockUtilityLinks;
+  return tree.map(({ label, href }) => ({ label, href }));
+}
+
+/** Footer link columns (top-level items become column headings). */
+export async function getFooterColumnsFromWordPress(): Promise<FooterColumn[]> {
+  const tree = await getMenuTreeFromWordPress("footer");
+  if (!tree) return mockFooterColumns;
+  const columns: FooterColumn[] = [];
+  for (const item of tree) {
+    if (item.children?.length) {
+      columns.push({
+        heading: item.label,
+        links: item.children.map(({ label, href }): LinkItem => ({ label, href })),
+      });
+    }
+  }
+  return columns.length ? columns : mockFooterColumns;
+}

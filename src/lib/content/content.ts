@@ -10,6 +10,11 @@
  * exist in the UI today and work unchanged against a remote source later.
  */
 import { events as mockEvents } from "@/data/events";
+import {
+  footerColumns as mockFooterColumns,
+  mainNavigation as mockMainNavigation,
+  utilityLinks as mockUtilityLinks,
+} from "@/data/site";
 import { faculties as mockFaculties } from "@/data/faculties";
 import { newsArticles as mockNews } from "@/data/news";
 import { programmes as mockProgrammes } from "@/data/programmes";
@@ -19,17 +24,23 @@ import type {
   AcademicProgramme,
   CalendarEvent,
   Faculty,
+  FooterColumn,
+  NavigationItem,
   NewsArticle,
   Statistic,
   Testimonial,
+  UtilityLink,
 } from "@/types";
 
 import { isWordPressConfigured } from "../wordpress/client";
 import {
   getEventsFromWordPress,
   getFacultiesFromWordPress,
+  getFooterColumnsFromWordPress,
+  getMainNavigationFromWordPress,
   getNewsFromWordPress,
   getProgrammesFromWordPress,
+  getUtilityLinksFromWordPress,
 } from "../wordpress/adapters";
 
 const wordpress = isWordPressConfigured();
@@ -98,6 +109,24 @@ export function getStatistics(): Promise<Statistic[]> {
 
 export function getTestimonials(): Promise<Testimonial[]> {
   return Promise.resolve(mockTestimonials);
+}
+
+/* --------------------------------------------------------------------------
+ * Menus & navigation
+ * ------------------------------------------------------------------------ */
+export function getMainNavigation(): Promise<NavigationItem[]> {
+  if (wordpress) return getMainNavigationFromWordPress();
+  return Promise.resolve(mockMainNavigation);
+}
+
+export function getUtilityLinks(): Promise<UtilityLink[]> {
+  if (wordpress) return getUtilityLinksFromWordPress();
+  return Promise.resolve(mockUtilityLinks);
+}
+
+export function getFooterColumns(): Promise<FooterColumn[]> {
+  if (wordpress) return getFooterColumnsFromWordPress();
+  return Promise.resolve(mockFooterColumns);
 }
 
 /* --------------------------------------------------------------------------

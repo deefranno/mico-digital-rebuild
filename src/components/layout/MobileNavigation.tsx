@@ -1,9 +1,12 @@
-import { mainNavigation } from "@/data/site";
+import { mainNavigation as fallbackNavigation } from "@/data/site";
+import { getMainNavigation } from "@/lib/content/content";
+import { useAsyncData } from "@/lib/content/use-async";
 import { CTAButton } from "@/components/shared/CTAButton";
 import { Plus, X } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { Link, useLocation } from "react-router";
+import { useLocation } from "react-router";
 import { cn } from "@/lib/utils";
+import { NavLink } from "./NavLink";
 
 interface MobileNavigationProps {
   open: boolean;
@@ -15,10 +18,14 @@ interface MobileNavigationProps {
  *  - `role="dialog"` + `aria-modal` with a labelled heading
  *  - Native `<details>` accordions for nested items (keyboard accessible)
  *  - Escape closes, body scroll is locked, focus returns to the toggle
+ * Menu items come from the content service (WordPress when configured).
  */
 export function MobileNavigation({ open, onClose }: MobileNavigationProps) {
   const location = useLocation();
   const closeRef = useRef<HTMLButtonElement>(null);
+
+  const { data } = useAsyncData(getMainNavigation);
+  const navigation = data ?? fallbackNavigation;
 
   // Close on route change
   useEffect(() => {
@@ -74,17 +81,17 @@ export function MobileNavigation({ open, onClose }: MobileNavigationProps) {
 
         <nav aria-label="Mobile navigation" className="flex-1 overflow-y-auto px-3 py-4">
           <ul className="space-y-1">
-            {mainNavigation.map((item) => {
+            {navigation.map((item) => {
               const hasChildren = item.children && item.children.length > 0;
               if (!hasChildren) {
                 return (
                   <li key={item.label}>
-                    <Link
+                    <NavLink
                       to={item.href}
                       className="flex items-center justify-between rounded-sm px-3 py-3 text-base font-semibold text-black transition-colors hover:bg-mico-light"
                     >
                       {item.label}
-                    </Link>
+                    </NavLink>
                   </li>
                 );
               }
@@ -92,13 +99,13 @@ export function MobileNavigation({ open, onClose }: MobileNavigationProps) {
                 <li key={item.label}>
                   <details className="group">
                     <summary className="flex cursor-pointer list-none items-center justify-between rounded-sm px-3 py-3 text-base font-semibold text-black transition-colors hover:bg-mico-light [&::-webkit-details-marker]:hidden">
-                      <Link
+                      <NavLink
                         to={item.href}
                         onClick={(e) => e.stopPropagation()}
                         className="flex-1"
                       >
                         {item.label}
-                      </Link>
+                      </NavLink>
                       <Plus
                         aria-hidden="true"
                         className="size-4 shrink-0 text-mico-mid transition-transform group-open:rotate-45"
@@ -107,12 +114,12 @@ export function MobileNavigation({ open, onClose }: MobileNavigationProps) {
                     <ul className="mb-2 ml-3 border-l border-black/10 pl-3">
                       {item.children!.map((child) => (
                         <li key={child.label}>
-                          <Link
+                          <NavLink
                             to={child.href}
                             className="block rounded-sm px-3 py-2.5 text-sm text-mico-mid transition-colors hover:bg-mico-light hover:text-black"
                           >
                             {child.label}
-                          </Link>
+                          </NavLink>
                         </li>
                       ))}
                     </ul>

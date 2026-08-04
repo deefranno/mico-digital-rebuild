@@ -126,6 +126,31 @@ export const GRAPHQL_QUERIES = {
       }
     }
   `,
+
+  /** All navigation menus (wp-admin Appearance > Menus). */
+  MENUS: /* GraphQL */ `
+    query GetMenus($first: Int!) {
+      menus(first: $first) {
+        nodes {
+          id
+          name
+          slug
+          locations
+          menuItems {
+            nodes {
+              id
+              databaseId
+              label
+              url
+              parentId
+              order
+              description
+            }
+          }
+        }
+      }
+    }
+  `,
 } as const;
 
 /** REST API paths (wp/v2). */
@@ -136,4 +161,7 @@ export const REST_PATHS = {
   programmes: "/wp/v2/programme",
   faculties: "/wp/v2/faculty",
   media: (id: number) => `/wp/v2/media/${id}`,
+  menus: "/wp/v2/menus",
+  menuItemsForMenu: (id: number) =>
+    `/wp/v2/menu-items?menus=${id}&per_page=100`,
 } as const;

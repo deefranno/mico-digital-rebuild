@@ -1,8 +1,11 @@
 import { Logo } from "@/components/shared/Logo";
 import { NewsletterForm } from "@/components/shared/NewsletterForm";
-import { siteConfig, footerColumns } from "@/data/site";
+import { siteConfig, footerColumns as fallbackFooterColumns } from "@/data/site";
+import { getFooterColumns } from "@/lib/content/content";
+import { useAsyncData } from "@/lib/content/use-async";
 import { Facebook, Instagram, Linkedin, Mail, MapPin, Phone, Twitter, Youtube } from "lucide-react";
 import { Link } from "react-router";
+import { NavLink } from "./NavLink";
 
 const socialIcons = {
   Facebook,
@@ -14,9 +17,14 @@ const socialIcons = {
 
 /**
  * Site footer: identity, contact, newsletter placeholder, link columns and
- * the legal bar. All link targets resolve to existing routes.
+ * the legal bar. Link columns come from the content service (WordPress menus
+ * when configured, mock data otherwise); contact details and socials remain
+ * static site config.
  */
 export function SiteFooter() {
+  const { data } = useAsyncData(getFooterColumns);
+  const footerColumns = data ?? fallbackFooterColumns;
+
   return (
     <footer className="bg-black text-white">
       <div className="container-site py-16 sm:py-20">
@@ -87,12 +95,12 @@ export function SiteFooter() {
                 <ul className="mt-5 space-y-2.5">
                   {column.links.map((link) => (
                     <li key={link.label}>
-                      <Link
+                      <NavLink
                         to={link.href}
                         className="text-sm text-white/65 transition-colors hover:text-white"
                       >
                         {link.label}
-                      </Link>
+                      </NavLink>
                     </li>
                   ))}
                 </ul>

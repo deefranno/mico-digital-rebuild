@@ -144,3 +144,48 @@ export interface WPGraphQLProgramme {
   };
   featuredImage?: { node: WPMediaNode };
 }
+
+/* --------------------------------------------------------------------------
+ * Menus (wp-admin Appearance > Menus)
+ * ------------------------------------------------------------------------ */
+
+/** REST: GET /wp/v2/menus */
+export interface WPRestMenu {
+  id: number;
+  name: string;
+  slug: string;
+  locations: string[];
+}
+
+/** REST: GET /wp/v2/menu-items?menus=<id> */
+export interface WPRestMenuItem {
+  id: number;
+  title: { rendered: string };
+  url: string;
+  /** id of the parent item; 0 for top-level items. */
+  parent: number;
+  menu_order: number;
+  description?: string;
+  attr_title?: string;
+  target?: string;
+}
+
+/** WPGraphQL: menus { nodes { ... } } */
+export interface WPGraphQLMenu {
+  id: string;
+  name: string;
+  slug: string;
+  locations?: string[] | null;
+  menuItems?: { nodes: WPGraphQLMenuItem[] } | null;
+}
+
+export interface WPGraphQLMenuItem {
+  id: string;
+  databaseId: number;
+  label: string;
+  url: string;
+  /** databaseId of the parent item; null for top-level items. */
+  parentId: number | null;
+  order?: number | null;
+  description?: string | null;
+}

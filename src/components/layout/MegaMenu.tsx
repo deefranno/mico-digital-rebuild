@@ -1,21 +1,28 @@
-import { mainNavigation } from "@/data/site";
+import { mainNavigation as fallbackNavigation } from "@/data/site";
+import { getMainNavigation } from "@/lib/content/content";
+import { useAsyncData } from "@/lib/content/use-async";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router";
+import { useLocation } from "react-router";
 import { cn } from "@/lib/utils";
+import { NavLink } from "./NavLink";
 
 /**
  * Desktop mega menu. Keyboard accessible:
  *  - Tab reaches each trigger; Enter/Space toggles the panel
  *  - Tab moves through the panel links; Escape closes and returns focus
  *  - Hover opens/closes with a small delay guard
- * The panel closes automatically when the route changes.
+ * The panel closes automatically when the route changes. Menu items come from
+ * the content service (WordPress menus when configured, mock data otherwise).
  */
 export function MegaMenu({ tone }: { tone: "light" | "dark" }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const location = useLocation();
   const rootRef = useRef<HTMLElement>(null);
   const closeTimer = useRef<number | null>(null);
+
+  const { data } = useAsyncData(getMainNavigation);
+  const navigation = data ?? fallbackNavigation;
 
   // Close when navigating
   useEffect(() => {
@@ -57,7 +64,7 @@ export function MegaMenu({ tone }: { tone: "light" | "dark" }) {
   return (
     <nav aria-label="Main navigation" ref={rootRef} className="hidden lg:block">
       <ul className="flex items-center">
-        {mainNavigation.map((item, index) => (
+        {navigation.map((item, index) => (
           <li
             key={item.label}
             onMouseEnter={() => openWithDelay(index)}
@@ -99,7 +106,7 @@ export function MegaMenu({ tone }: { tone: "light" | "dark" }) {
                   <ul className="grid gap-1 p-3">
                     {item.children.map((child) => (
                       <li key={child.label}>
-                        <Link
+                        <NavLink
                           to={child.href}
                           onClick={() => setOpenIndex(null)}
                           className="group flex items-start gap-3 rounded-sm px-3 py-2.5 transition-colors hover:bg-mico-light"
@@ -118,16 +125,16 @@ export function MegaMenu({ tone }: { tone: "light" | "dark" }) {
                               </span>
                             )}
                           </span>
-                        </Link>
+                        </NavLink>
                       </li>
                     ))}
                   </ul>
                 </div>
               </>
             ) : (
-              <Link to={item.href} className={linkClass}>
+              <NavLink to={item.href} className={linkClass}>
                 {item.label}
-              </Link>
+              </NavLink>
             )}
           </li>
         ))}

@@ -227,6 +227,12 @@ export interface UtilityLink {
   href: string;
 }
 
+/** One link column in the site footer. */
+export interface FooterColumn {
+  heading: string;
+  links: LinkItem[];
+}
+
 export interface SocialLink {
   label: string;
   href: string;
