@@ -1,15 +1,1 @@
-/// <reference types="vite/client" />
-
-interface ImportMetaEnv {
-  readonly VITE_CONVEX_URL?: string;
-  readonly VITE_SITE_URL?: string;
-  readonly VITE_WORDPRESS_API_URL?: string;
-  readonly VITE_WORDPRESS_GRAPHQL_URL?: string;
-  readonly VITE_WORDPRESS_APPLICATION_PASSWORD?: string;
-  readonly VITE_VLY_APP_ID?: string;
-  readonly VITE_VLY_MONITORING_URL?: string;
-}
-
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
-}
+[FILE_TOO_LARGE]: The combined read_files output exceeded the 100,000 character hard limit. This file was truncated after 0 characters. Read it separately or use code_search for the relevant section.
